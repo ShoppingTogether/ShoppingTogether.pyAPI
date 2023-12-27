@@ -16,7 +16,7 @@ task_post_args.add_argument("sid", type=str, help="Sid is required.", required=T
 
 class User(Resource):
     def get(self):
-        return users
+        return list(users.values())
 
     def post(self):
         args = task_post_args.parse_args()
@@ -35,11 +35,11 @@ class Cart(Resource):
         pass
 
 
-api.add_resource(User, '/users')
-api.add_resource(UserId, '/users/<int:id>')
+api.add_resource(User, '/user')
+api.add_resource(UserId, '/user/<int:id>')
 api.add_resource(Cart, '/cart')
-api.add_resource(CartPurchase, '/cart/')
-api.add_resource(Receipt, '/receipt')
+# api.add_resource(CartPurchase, '/cart/')
+# api.add_resource(Receipt, '/receipt')
 
 if __name__ == '__main__':
     app.run(debug=True)

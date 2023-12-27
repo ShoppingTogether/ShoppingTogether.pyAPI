@@ -1,0 +1,237 @@
+openapi: '3.0.2'
+info:
+  title: ShoppingTogether API
+  version: '1.0'
+servers:
+  - url: http://127.0.0.1:5000
+paths:
+  /user:
+    get:
+      summary: 'Get all users'
+      tags:
+        - User
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      summary: 'Add a user'
+      tags:
+        - User      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddUserRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /user/{id}:
+    get:
+      summary: 'Get a user by id'
+      tags:
+        - User      
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK      
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /cart:
+    get:
+      summary: 'Get the active cart'
+      tags: 
+        - Cart
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderLine'
+    post:
+      summary: 'Add a product to the active cart'
+      tags:
+        - Cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderLineRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderLine'
+    delete:
+      summary: 'Delete a product from the active cart'
+      tags:
+        - Cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderLineRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderLine'
+        '404':
+          description: 'Product not found in cart'
+  /cart/purchase:
+    post:
+      summary: 'Purchase the active cart'
+      description: 'Mark the active cart as purchased and creates a receipt and its respective user_receipts for the purchased cart'
+      tags:
+        - Cart
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderLine'
+  /receipt:
+    get:
+      summary: 'Gets all past carts via OrderLine'
+      tags:
+        - Receipt
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderLine'
+  /receipt/pay:
+    post:
+      summary: "Pay for a past cart"
+      tags:
+        - Receipt
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReceiptRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserReceipt'
+
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+        sid:
+          type: string
+        timeCreated:
+          type: string
+          format: date-time
+    AddUserRequest:
+      type: object
+      required:
+        - name
+        - sid
+      properties:
+        name:
+          type: string
+        sid:
+          type: string
+    OrderLine:
+      type: object
+      properties:
+        id:
+          type: integer
+        cartid:
+          type: integer
+        userid:
+          type: integer
+        product_upn:
+          type: integer
+        product_description:
+          type: string
+        product_price:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time 
+        removed_at:
+          type: string
+          format: date-time
+    OrderLineRequest:
+      properties:
+        id:
+          type: integer
+        userid:
+          type: integer
+        product_upn:
+          type: integer
+        product_description:
+          type: string
+        product_price:
+          type: integer
+    ReceiptRequest:
+      properties:
+        user_id:
+          type: integer
+        receipt_id:
+          type: integer
+    UserReceipt:
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        receipt_id: 
+          type: integer
+        amount_owed:
+          type: integer
+        is_paid:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        paid_at:
+          type: string
+          format: date-time
