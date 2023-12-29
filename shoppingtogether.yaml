@@ -1,47 +1,47 @@
-openapi: '3.0.2'
+openapi: "3.0.2"
 info:
   title: ShoppingTogether API
-  version: '1.0'
+  version: "1.0"
 servers:
   - url: http://127.0.0.1:5000
 paths:
   /user:
     get:
-      summary: 'Get all users'
+      summary: "Get all users"
       tags:
         - User
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
+                  $ref: "#/components/schemas/User"
     post:
-      summary: 'Add a user'
+      summary: "Add a user"
       tags:
-        - User      
+        - User
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddUserRequest'
+              $ref: "#/components/schemas/AddUserRequest"
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '409':
-          description: User with name already exists
+                $ref: "#/components/schemas/User"
+        "409":
+          description: Name already exists
   /user/{id}:
     get:
-      summary: 'Get a user by id'
+      summary: "Get a user by id"
       tags:
-        - User      
+        - User
       parameters:
         - name: id
           in: path
@@ -49,91 +49,91 @@ paths:
           schema:
             type: string
       responses:
-        '200':
-          description: OK      
+        "200":
+          description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
   /cart:
     get:
-      summary: 'Get the active cart'
-      tags: 
+      summary: "Get the active cart"
+      tags:
         - Cart
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/OrderLine'
+                  $ref: "#/components/schemas/OrderLine"
     post:
-      summary: 'Add a product to the active cart'
+      summary: "Add a product to the active cart"
       tags:
         - Cart
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrderLineRequest'
+              $ref: "#/components/schemas/OrderLineRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrderLine'
+                $ref: "#/components/schemas/OrderLine"
     delete:
-      summary: 'Delete a product from the active cart'
+      summary: "Delete a product from the active cart"
       tags:
         - Cart
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrderLineRequest'
+              $ref: "#/components/schemas/OrderLineRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/OrderLine'
-        '404':
-          description: 'Product not found in cart'
+                  $ref: "#/components/schemas/OrderLine"
+        "404":
+          description: "Product not found in cart"
   /cart/purchase:
     post:
-      summary: 'Purchase the active cart'
-      description: 'Mark the active cart as purchased and creates a receipt and its respective user_receipts for the purchased cart'
+      summary: "Purchase the active cart"
+      description: "Mark the active cart as purchased and creates a receipt and its respective user_receipts for the purchased cart"
       tags:
         - Cart
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/OrderLine'
+                  $ref: "#/components/schemas/OrderLine"
   /receipt:
     get:
-      summary: 'Gets all past carts via OrderLine'
+      summary: "Gets all past carts via OrderLine"
       tags:
         - Receipt
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/OrderLine'
+                  $ref: "#/components/schemas/OrderLine"
   /receipt/pay:
     post:
       summary: "Pay for a past cart"
@@ -143,17 +143,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReceiptRequest'
+              $ref: "#/components/schemas/ReceiptRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserReceipt'
-
+                  $ref: "#/components/schemas/UserReceipt"
 
 components:
   schemas:
@@ -197,7 +196,7 @@ components:
           format: date-time
         modified_at:
           type: string
-          format: date-time 
+          format: date-time
         removed_at:
           type: string
           format: date-time
@@ -225,7 +224,7 @@ components:
           type: integer
         user_id:
           type: integer
-        receipt_id: 
+        receipt_id:
           type: integer
         amount_owed:
           type: integer

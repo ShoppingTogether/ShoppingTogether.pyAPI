@@ -65,11 +65,6 @@ class UserReceiptModel(db.Model):
     paid_at = db.Column(db.DateTime, nullable=True)
 
 
-users = {
-    0: {"name": "Alex", "sid": "12345", "createdAt": "2023-12-20T10:10:38.732464"},
-    1: {"name": "Omar", "sid": "23456", "createdAt": "2023-12-20T10:10:40.732464"},
-}
-
 user_post_args = reqparse.RequestParser()
 user_post_args.add_argument("name", type=str, help="Name is required.", required=True)
 user_post_args.add_argument("sid", type=str, help="Sid is required.", required=True)
@@ -99,15 +94,12 @@ user_fields = {
     "sid": fields.String,
     "createdAt": fields.DateTime,
 }
-
 cart_fields = {
     "id": fields.Integer,
     "createdAt": fields.DateTime,
     "purchasedAt": fields.DateTime,
 }
-
 active_cart_fields = {"cartId": fields.Integer, "modifiedAt": fields.DateTime}
-
 order_line_fields = {
     "id": fields.Integer,
     "cartId": fields.Integer,
@@ -120,7 +112,6 @@ order_line_fields = {
     "modifiedAt": fields.DateTime,
     "removedAt": fields.DateTime,
 }
-
 receipt_fields = {
     "id": fields.Integer,
     "cartId": fields.Integer,
@@ -129,7 +120,6 @@ receipt_fields = {
     "total": fields.Float,
     "createdAt": fields.DateTime,
 }
-
 user_receipt_fields = {
     "id": fields.Integer,
     "receiptId": fields.Integer,
@@ -152,7 +142,7 @@ class User(Resource):
         args = user_post_args.parse_args()
         user = UserModel.query.get(args["name"])
         if user:
-            abort(409, message="User with name already exists")
+            abort(409, message="Name already exists")
         user = UserModel(
             name=args["name"], sid=args["sid"], created_at=datetime.datetime.now()
         )
@@ -224,8 +214,9 @@ class Cart(Resource):
 api.add_resource(User, "/user")
 api.add_resource(UserId, "/user/<int:id>")
 api.add_resource(Cart, "/cart")
-# api.add_resource(CartPurchase, '/cart/')
+# api.add_resource(CartPurchase, '/cart/purchase')
 # api.add_resource(Receipt, '/receipt')
 
+# change debug to False when deploying
 if __name__ == "__main__":
     app.run(debug=True)
