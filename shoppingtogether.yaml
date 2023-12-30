@@ -105,6 +105,28 @@ paths:
                   $ref: "#/components/schemas/OrderLine"
         "404":
           description: "Product not found in cart"
+  /cart/{id}:
+    get:
+      summary: "Get a cart by id"
+      tags:
+        - Cart
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrderLine"
+        "404":
+          description: "No Active Cart"
   /cart/purchase:
     post:
       summary: "Purchase the active cart"
@@ -119,7 +141,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/OrderLine"
+                  $ref: "#/components/schemas/Receipt"
   /receipt:
     get:
       summary: "Gets all past carts via OrderLine"
@@ -150,10 +172,27 @@ paths:
           content:
             application/json:
               schema:
+                $ref: "#/components/schemas/UserReceipt"
+  /receipt/{id}:
+    get:
+      summary: "Get a receipt by user_id"
+      tags:
+        - Receipt
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/UserReceipt"
-
 components:
   schemas:
     User:
@@ -202,9 +241,7 @@ components:
           format: date-time
     OrderLineRequest:
       properties:
-        id:
-          type: integer
-        userid:
+        user_id:
           type: integer
         product_upn:
           type: integer
@@ -212,6 +249,24 @@ components:
           type: string
         product_price:
           type: integer
+    Receipt:
+      properties:
+        id:
+          type: integer
+        cart_id:
+          type: integer
+        subtotal:
+          type: number
+          format: float
+        fee:
+          type: number
+          format: float
+        total:
+          type: number
+          format: float
+        created_at:
+          type: string
+          format: date-time
     ReceiptRequest:
       properties:
         user_id:
