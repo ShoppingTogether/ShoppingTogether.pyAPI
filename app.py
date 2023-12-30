@@ -97,6 +97,14 @@ cart_args.add_argument(
     "product_price", type=float, help="ProductPrice is required.", required=True
 )
 
+cart_delete_args = reqparse.RequestParser()
+cart_delete_args.add_argument(
+    "user_id", type=int, help="UserId is required.", required=True
+)
+cart_delete_args.add_argument(
+    "product_upn", type=int, help="ProductUpn is required.", required=True
+)
+
 receipt_pay_args = reqparse.RequestParser()
 receipt_pay_args.add_argument(
     "user_id", type=int, help="UserId is required.", required=True
@@ -148,8 +156,10 @@ user_receipt_fields = {
     "paid_at": fields.DateTime,
 }
 
-with app.app_context():
-    db.create_all()
+# !remove when deploying, resets db
+# with app.app_context():
+#     db.drop_all()
+#     db.create_all()
 
 
 class User(Resource):
@@ -208,6 +218,8 @@ class Cart(Resource):
             db.session.commit()
 
         args = cart_args.parse_args()
+        if UserModel.query.get(args["user_id"]) is None:
+            abort(404, message="User not found")
         order_line = OrderLineModel.query.filter_by(
             cart_id=active_cart.cart_id,
             user_id=args["user_id"],
@@ -232,12 +244,13 @@ class Cart(Resource):
         db.session.commit()
         return order_line, 201
 
+    # !change to only accept user_id and product_upn
     @marshal_with(order_line_fields)
     def delete(self):
         active_cart = ActiveCartModel.query.first()
         if active_cart is None:
             abort(404, message="No active cart")
-        args = cart_args.parse_args()
+        args = cart_delete_args.parse_args()
         order_line = OrderLineModel.query.filter_by(
             cart_id=active_cart.cart_id,
             user_id=args["user_id"],
@@ -287,16 +300,6 @@ class CartPurchase(Resource):
         for user_id, user_subtotal in user_subtotals.items():
             user_subtotals[user_id] += fee_per_user.quantize(Decimal("0.00"))
 
-        # add user_receipts
-        for user_id, user_subtotal in user_subtotals.items():
-            user_receipt = UserReceiptModel(
-                user_id=user_id,
-                amount_owed=user_subtotal,
-                is_paid=False,
-                created_at=datetime.datetime.now(),
-            )
-            db.session.add(user_receipt)
-
         # add cart to receipts
         receipt = ReceiptModel(
             cart_id=active_cart.cart_id,
@@ -307,18 +310,30 @@ class CartPurchase(Resource):
         )
         db.session.add(receipt)
 
+        # add user_receipts
+        for user_id, user_subtotal in user_subtotals.items():
+            user_receipt = UserReceiptModel(
+                user_id=user_id,
+                receipt_id=receipt.id,
+                amount_owed=user_subtotal,
+                is_paid=False,
+                created_at=datetime.datetime.now(),
+            )
+            db.session.add(user_receipt)
+
         # remove cart from active_cart
         db.session.delete(active_cart)
         db.session.commit()
+        return receipt, 201
 
 
 class CardId(Resource):
     @marshal_with(order_line_fields)
     def get(self, id):
-        active_cart = ActiveCartModel.query.first()
-        if active_cart is None:
-            abort(404, message="No active cart")
-        order_lines = OrderLineModel.query.filter_by(cart_id=active_cart.cart_id).all()
+        cart = CartModel.query.get(id)
+        if cart is None:
+            abort(404, message="CartId not found")
+        order_lines = OrderLineModel.query.filter_by(cart_id=cart.id).all()
         return order_lines, 200
 
 
@@ -330,7 +345,7 @@ class Receipt(Resource):
 
 
 class ReceiptId(Resource):
-    @marshal_with(receipt_fields)
+    @marshal_with(user_receipt_fields)
     def get(self, user_id):
         receipt = UserReceiptModel.query.filter_by(user_id=user_id).all()
         if receipt is None:
@@ -364,4 +379,4 @@ api.add_resource(ReceiptPay, "/receipt/pay")
 
 # change debug to False when deploying
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(port=8000, debug=True)
