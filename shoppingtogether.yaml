@@ -127,6 +127,24 @@ paths:
                   $ref: "#/components/schemas/OrderLine"
         "404":
           description: "No Active Cart"
+
+  /cart/total:
+    get:
+      summary: "Get active cart total"
+      tags:
+        - Cart
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: number
+                    format: float
+
   /cart/purchase:
     post:
       summary: "Purchase the active cart"
@@ -193,6 +211,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/UserReceipt"
+
 components:
   schemas:
     User:

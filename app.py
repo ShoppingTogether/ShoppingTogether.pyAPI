@@ -25,10 +25,10 @@ class UserModel(db.Model):
     order_lines = db.relationship("OrderLineModel", backref="user", lazy=True)
 
 
-# !add total to cart
 class CartModel(db.Model):
     __tablename__ = "cart"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    total = db.Column(db.Numeric, default=Decimal("0.00"))
     created_at = db.Column(db.DateTime)
     purchased_at = db.Column(db.DateTime, nullable=True)
     order_lines = db.relationship("OrderLineModel", backref="cart", lazy=True)
@@ -122,6 +122,7 @@ user_fields = {
 }
 cart_fields = {
     "id": fields.Integer,
+    "total": fields.Float,
     "created_at": fields.DateTime,
     "purchased_at": fields.DateTime,
 }
@@ -241,10 +242,10 @@ class Cart(Resource):
                 created_at=datetime.datetime.now(),
             )
             db.session.add(order_line)
+        active_cart.cart.total += order_line.product_price
         db.session.commit()
         return order_line, 201
 
-    # !change to only accept user_id and product_upn
     @marshal_with(order_line_fields)
     def delete(self):
         active_cart = ActiveCartModel.query.first()
@@ -273,6 +274,14 @@ class Cart(Resource):
         return remaining_order_lines, 200
 
 
+class CartTotal(Resource):
+    def get(self):
+        active_cart = ActiveCartModel.query.first()
+        if active_cart is None:
+            abort(404, message="No active cart")
+        return {"total": str(active_cart.cart.total)}, 200
+
+
 class CartPurchase(Resource):
     @marshal_with(receipt_fields)
     def post(self):
@@ -292,6 +301,10 @@ class CartPurchase(Resource):
                 user_subtotals[order_line.user_id] += line_total
             else:
                 user_subtotals[order_line.user_id] = line_total
+
+        # sanity check, should never happen
+        if subtotal != active_cart.cart.total:
+            abort(500, message="Subtotal does not match cart total")
 
         fee = Decimal("6.95")
         total = subtotal + fee
